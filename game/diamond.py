@@ -1,4 +1,4 @@
-from cell import Cell
+from .cell import Cell
 import matplotlib.pyplot as plt
 import networkx as nx
 
@@ -78,8 +78,8 @@ class Diamond:
         plt.show()
 
 
-my_diamond = Diamond(5)
-my_diamond.create_diamond([(0,0)])
+#my_diamond = Diamond(5)
+#my_diamond.create_diamond([(0,0)])
 #my_diamond.move(my_grid.cell_list[3][5],(1,-1))
 #my_diamond.move(my_grid.cell_list[1][2],(0,-1))
-my_diamond.print_diamond()
+#my_diamond.print_diamond()

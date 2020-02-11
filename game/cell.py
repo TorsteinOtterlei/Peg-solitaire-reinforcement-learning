@@ -1,8 +1,6 @@
 
 class Cell:
 
-    #TODO: DICTIONARY FOR NEIGBORING NODES. KEY IS POSITION
-
     def __init__(self,position,contains_pin=True):
         self.contains_pin = contains_pin
         self.position = position

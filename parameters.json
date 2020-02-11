@@ -1,0 +1,18 @@
+{
+    "board_type": "triangle",
+    "board_size": 5,
+    "open_cells": ["(0,0)","(1,0)"],
+    "num_episodes": "",
+    "critic_type": "table",
+    "nn_dimensions": "",
+    "learning_rate_actor": "",
+    "learning_rate_critic": "",
+    "decay_rate_actor": "",
+    "decay_rate_critic": "",
+    "discount_factor_actor": "",
+    "discount_factor_critic": "",
+    "init_val_e": "",
+    "e_decay_rate": "",
+    "display_var": "",
+    "frame_delay":""
+}

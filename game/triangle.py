@@ -1,4 +1,4 @@
-from cell import Cell
+from .cell import Cell
 import matplotlib.pyplot as plt
 import networkx as nx
 
@@ -64,11 +64,11 @@ class Triangle:
 
 
 
-my_triangle = Triangle(5)
-my_triangle.create_triangle([(2,0)])
+#my_triangle = Triangle(6)
+#my_triangle.create_triangle([(2,0)])
 #my_triangle.move(my_triangle.cell_list[0][0],(1,0))
 #my_triangle.move(my_triangle.cell_list[1][2],(0,-1))
-my_triangle.print_triangle()
+#my_triangle.print_triangle()
 
     
 
