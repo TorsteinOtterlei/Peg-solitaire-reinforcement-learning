@@ -48,7 +48,7 @@ class Cell:
             print("The final position already has a pin!")
             return False  
         
-        print("This is a valid move")
+        #print("This is a valid move")
         return True                                                     #Return true/false
 
     
@@ -57,5 +57,4 @@ class Cell:
         self.get_neighbor(move).remove_pin()
         self.get_neighbor(move).get_neighbor(move).put_pin()
     
-
 
