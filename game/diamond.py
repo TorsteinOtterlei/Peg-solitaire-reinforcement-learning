@@ -143,8 +143,9 @@ class Diamond:
         plt.pause(frame_delay)
 
 
-#my_diamond = Diamond(5)
-#my_diamond.create_diamond([(0,0)])
+#my_diamond = Diamond(4)
+#my_diamond.create_diamond([(1,2),(3,1),(2,2),(2,1)])
 #my_diamond.move(my_grid.cell_list[3][5],(1,-1))
 #my_diamond.move(my_grid.cell_list[1][2],(0,-1))
-#my_diamond.print_diamond()
+#my_diamond.print(2)
+

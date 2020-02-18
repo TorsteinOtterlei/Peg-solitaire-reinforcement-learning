@@ -14,5 +14,5 @@
     "init_val_e": 0.85,
     "e_decay_rate": 0.007,
     "display_var": 1,
-    "frame_delay": 0.2
+    "frame_delay": 0.5
 }
