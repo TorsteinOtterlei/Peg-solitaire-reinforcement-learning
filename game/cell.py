@@ -30,20 +30,28 @@ class Cell:
     def get_neighbor(self,move):
         if move in self.neighbors:
             return self.neighbors[move]
-        raise Exception("This is not a neighbor of this node! Might be out of board.")
+        #raise Exception("This is not a neighbor of this node! Might be out of board.")
 
 
     def valid_move(self,move):                                    #Checks himself and the neighbor in question
+        if not move in self.neighbors:                            #Check if move is possible at all
+            #print("Move not possible. No neighbor from this pin")
+            return False
+
+        if not move in self.neighbors[move].neighbors:            #Check if move is possible at all
+            #print("Move not possible. Third pin out of board")
+            return False
+    
         if not self.contains_pin:
-            print("This cell does not have a pin to move!")       #Checks if himself has peg
+            #print("This cell does not have a pin to move!")       #Checks if himself has peg
             return False
 
         if not self.get_neighbor(move).contains_pin:
-            print("There are no pin to jump over!")                     #Get cell two and check if he has peg
+            #print("There are no pin to jump over!")                     #Get cell two and check if he has peg
             return False
 
         if self.get_neighbor(move).get_neighbor(move).contains_pin:     #Get cell three and make sure he has no peg
-            print("The final position already has a pin!")
+            #print("The final position already has a pin!")
             return False  
         
         #print("This is a valid move")

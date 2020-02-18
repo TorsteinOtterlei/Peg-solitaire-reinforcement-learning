@@ -8,12 +8,14 @@ class Diamond:
     def __init__(self,size):
         self.cell_list = []
         self.size = size
+        self.neighbor_move_values = ((-1,0),(-1,1),(0,1),(1,0),(1,-1),(0,-1))
+        self.state_string = ""
 
     
     def create_diamond(self,nopeg_cell_list):
-        for row in range(self.size+1):
+        for row in range(self.size):
             rowList = []
-            for col in range(self.size+1):
+            for col in range(self.size):
                 rowList.append(Cell((row,col)))
             self.cell_list.append(rowList)
 
@@ -21,27 +23,89 @@ class Diamond:
             self.cell_list[cell_pos[0]][cell_pos[1]].remove_pin()
 
         self.init_neighbors_diamond()
+        self.update_state_string()
 
 
     def init_neighbors_diamond(self):
-        neighbor_move_values = ((-1,0),(-1,1),(0,1),(1,0),(1,-1),(0,-1))
         for row in self.cell_list:
             for cell in row:
-                for move in neighbor_move_values:
+                for move in self.neighbor_move_values:
                     row_pos = cell.position[0] + move[0]
                     col_pos = cell.position[1] + move[1]
 
                     if -1 < row_pos < self.size and -1 < col_pos < self.size:
                         cell.add_neighbor(move,self.cell_list[row_pos][col_pos])
 
+    def is_solveable_check(self):
+        done_moves = []
+        moves = self.get_possible_moves()
+        while len(moves) > 0:
+            current_move = moves.pop(0)
+            if current_move not in done_moves:
+                done_moves.append(current_move)
+                self.move_4tup(current_move)
+                if self.check_is_win_state():
+                    return True
+                for move in moves:
+                    moves.append(moves)
+        return False
+
+    def get_possible_moves(self):
+        all_moves = []
+        for row in self.cell_list:
+            for cell in row:
+                if cell.contains_pin:
+                    for move in self.neighbor_move_values:
+                        if cell.valid_move(move):
+                            all_moves.append((cell.position[0],cell.position[1],move[0],move[1]))
+        return all_moves
+
+    # def get_state(self):
+    #     state_list = []
+    #     for i in range(len(self.cell_list)):
+    #         state_list.append([])
+    #         for j in range(len(self.cell_list[i])):
+    #             if self.cell_list[i][j].contains_pin:
+    #                 state_list[i].append(1)
+    #             else:
+    #                 state_list[i].append(0)
+    #     return state_list
+
+    def update_state_string(self):
+        self.state_string = ""
+        for row in self.cell_list:
+            for cell in row:
+                if cell.contains_pin:
+                    self.state_string += "1"
+                else:
+                    self.state_string += "0"
+
+    def check_is_win_state(self):
+        return self.state_string.count('1') == 1
+
+    def get_reward(self):
+        if self.check_is_win_state():
+            return 10
+        elif not self.get_possible_moves():
+            return -10
+        else:
+            return 0
+
+    # (pinpos0,pinpos1,topos0,topos1)
+
+    def move_4tup(self,tup):
+        self.move((tup[0],tup[1]),(tup[2],tup[3]))
+
         
-    def move(self,pin_cell,move):
+    def move(self,pin_pos,move):
+        pin_cell = self.cell_list[pin_pos[0]][pin_pos[1]]
         if pin_cell.valid_move(move):
-            print("Moving pin at",pin_cell.position,"to position", (pin_cell.position[0]+move[0]*2,pin_cell.position[1]+move[1]*2))
+            #print("Moving pin at",pin_cell.position,"to position", (pin_cell.position[0]+move[0]*2,pin_cell.position[1]+move[1]*2))
             pin_cell.make_move(move)
+            self.update_state_string()
 
     
-    def print_diamond(self):
+    def print(self,frame_delay):
         display_grid = []
 
         diamond_shape = [i for i in range(1,self.size)]                  #diamond_shape is a list of lists defining the shape of the diamond. Ex size 4 makes [1,2,3,4,3,2,1]
@@ -75,7 +139,8 @@ class Diamond:
 
         pos = nx.get_node_attributes(G,'pos')
         nx.draw(G, pos, node_color=node_colors, node_size=5000, with_labels=False, font_weight='bold')
-        plt.show()
+        plt.show(block=False)
+        plt.pause(frame_delay)
 
 
 #my_diamond = Diamond(5)

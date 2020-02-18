@@ -7,6 +7,8 @@ class Triangle:
     def __init__(self,size):
         self.cell_list = []
         self.size = size
+        self.neighbor_move_values = ((0,-1),(-1,-1),(-1,0),(0,1),(1,1),(1,0))
+        self.state_string = ""
 
     def create_triangle(self,nopeg_cell_list):
         for row in range(self.size):
@@ -19,12 +21,12 @@ class Triangle:
             self.cell_list[cell_pos[0]][cell_pos[1]].remove_pin()
             
         self.init_neighbors_triangle()
+        self.update_state_string()
 
     def init_neighbors_triangle(self):
-        neighbor_move_values = ((0,-1),(-1,-1),(-1,0),(0,1),(1,1),(1,0))
         for row in self.cell_list:
             for cell in row:
-                for move in neighbor_move_values:
+                for move in self.neighbor_move_values:
                     row_pos = cell.position[0] + move[0]
                     col_pos = cell.position[1] + move[1]
 
@@ -33,13 +35,49 @@ class Triangle:
                     elif -1 < row_pos < self.size and -1 < col_pos < self.size:
                         cell.add_neighbor(move,self.cell_list[row_pos][col_pos])
 
-    def move(self,pin_cell,move):
+
+    def get_possible_moves(self):
+        all_moves = []
+        for row in self.cell_list:
+            for cell in row:
+                if cell.contains_pin:
+                    for move in self.neighbor_move_values:
+                        if cell.valid_move(move):
+                            all_moves.append((cell.position[0],cell.position[1],move[0],move[1]))
+        return all_moves
+
+    def update_state_string(self):
+        self.state_string = ""
+        for row in self.cell_list:
+            for cell in row:
+                if cell.contains_pin:
+                    self.state_string += "1"
+                else:
+                    self.state_string += "0"
+
+    def check_is_win_state(self):
+        return self.state_string.count('1') == 1
+
+    def get_reward(self):
+        if self.check_is_win_state():
+            return 10
+        elif not self.get_possible_moves():
+            return -10
+        else:
+            return 0
+
+    def move_4tup(self,tup):
+        self.move((tup[0],tup[1]),(tup[2],tup[3]))
+
+    def move(self,pin_pos,move):
+        pin_cell = self.cell_list[pin_pos[0]][pin_pos[1]]
         if pin_cell.valid_move(move):
-            print("Moving pin at",pin_cell.position,"to position", (pin_cell.position[0]+move[0]*2,pin_cell.position[1]+move[1]*2))
+            #print("Moving pin at",pin_cell.position,"to position", (pin_cell.position[0]+move[0]*2,pin_cell.position[1]+move[1]*2))
             pin_cell.make_move(move)
+            self.update_state_string()
             
 
-    def print_triangle(self):                           #Because the cell_list is already in the correct format, we do not need create a display_grid like we did with the diamond implementation
+    def print(self,frame_delay):                           #Because the cell_list is already in the correct format, we do not need create a display_grid like we did with the diamond implementation
         G = nx.Graph()
         node_colors = []
         for i in range(len(self.cell_list)):
@@ -60,15 +98,17 @@ class Triangle:
 
         pos = nx.get_node_attributes(G,'pos')
         nx.draw(G, pos, node_color=node_colors, node_size=5000, with_labels=False, font_weight='bold')
-        plt.show()
+        plt.show(block=False)
+        plt.pause(frame_delay)
 
 
 
-#my_triangle = Triangle(6)
+#my_triangle = Triangle(4)
 #my_triangle.create_triangle([(2,0)])
 #my_triangle.move(my_triangle.cell_list[0][0],(1,0))
 #my_triangle.move(my_triangle.cell_list[1][2],(0,-1))
-#my_triangle.print_triangle()
+#print(my_triangle.get_possible_moves())
+#my_triangle.print(10)
 
     
 
