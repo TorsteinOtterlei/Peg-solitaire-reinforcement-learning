@@ -5,28 +5,26 @@ import networkx as nx
 
 class Diamond:
 
-    def __init__(self,size):
-        self.cell_list = []
+    def __init__(self,size,nopeg_cell_list):
         self.size = size
         self.neighbor_move_values = ((-1,0),(-1,1),(0,1),(1,0),(1,-1),(0,-1))
         self.state_string = ""
 
-    
-    def create_diamond(self,nopeg_cell_list):
+        self.cell_list = []                                                     #Init cell-list
         for row in range(self.size):
             rowList = []
             for col in range(self.size):
                 rowList.append(Cell((row,col)))
             self.cell_list.append(rowList)
 
-        for cell_pos in nopeg_cell_list:
+        for cell_pos in nopeg_cell_list:                                        #Remove pins as specified in nopeg_cell_list 
             self.cell_list[cell_pos[0]][cell_pos[1]].remove_pin()
 
-        self.init_neighbors_diamond()
+        self.init_neighbors()
         self.update_state_string()
 
 
-    def init_neighbors_diamond(self):
+    def init_neighbors(self):
         for row in self.cell_list:
             for cell in row:
                 for move in self.neighbor_move_values:
@@ -36,19 +34,6 @@ class Diamond:
                     if -1 < row_pos < self.size and -1 < col_pos < self.size:
                         cell.add_neighbor(move,self.cell_list[row_pos][col_pos])
 
-    def is_solveable_check(self):
-        done_moves = []
-        moves = self.get_possible_moves()
-        while len(moves) > 0:
-            current_move = moves.pop(0)
-            if current_move not in done_moves:
-                done_moves.append(current_move)
-                self.move_4tup(current_move)
-                if self.check_is_win_state():
-                    return True
-                for move in moves:
-                    moves.append(moves)
-        return False
 
     def get_possible_moves(self):
         all_moves = []
@@ -59,17 +44,6 @@ class Diamond:
                         if cell.valid_move(move):
                             all_moves.append((cell.position[0],cell.position[1],move[0],move[1]))
         return all_moves
-
-    # def get_state(self):
-    #     state_list = []
-    #     for i in range(len(self.cell_list)):
-    #         state_list.append([])
-    #         for j in range(len(self.cell_list[i])):
-    #             if self.cell_list[i][j].contains_pin:
-    #                 state_list[i].append(1)
-    #             else:
-    #                 state_list[i].append(0)
-    #     return state_list
 
     def update_state_string(self):
         self.state_string = ""
@@ -82,14 +56,6 @@ class Diamond:
 
     def check_is_win_state(self):
         return self.state_string.count('1') == 1
-
-    def get_reward(self):
-        if self.check_is_win_state():
-            return 10
-        elif not self.get_possible_moves():
-            return -10
-        else:
-            return 0
 
     # (pinpos0,pinpos1,topos0,topos1)
 
@@ -148,4 +114,32 @@ class Diamond:
 #my_diamond.move(my_grid.cell_list[3][5],(1,-1))
 #my_diamond.move(my_grid.cell_list[1][2],(0,-1))
 #my_diamond.print(2)
+
+
+
+    #def is_solveable_check(self):
+    #    done_moves = []
+    #    moves = self.get_possible_moves()
+    #    while len(moves) > 0:
+    #        current_move = moves.pop(0)
+    #        if current_move not in done_moves:
+    #            done_moves.append(current_move)
+    #            self.move_4tup(current_move)
+    #            if self.check_is_win_state():
+    #                return True
+    #            for move in moves:
+    #                moves.append(moves)
+    #    return False
+
+
+    # def get_state(self):
+    #     state_list = []
+    #     for i in range(len(self.cell_list)):
+    #         state_list.append([])
+    #         for j in range(len(self.cell_list[i])):
+    #             if self.cell_list[i][j].contains_pin:
+    #                 state_list[i].append(1)
+    #             else:
+    #                 state_list[i].append(0)
+    #     return state_list
 

@@ -42,11 +42,9 @@ def main():
 
     for i in range(num_episodes):
         if game_type == 'd':
-            game = Diamond(parameters['board_size'])
-            game.create_diamond(open_cell_list)
+            game = Diamond(parameters['board_size'], open_cell_list)
         elif game_type == 't':
-            game = Triangle(parameters['board_size'])
-            game.create_triangle(open_cell_list)
+            game = Triangle(parameters['board_size'], open_cell_list)
         else: raise Exception("Not valid game type")
 
         actor.reset_eligibilities()                     #Reset eligibilities in actor
@@ -59,7 +57,7 @@ def main():
 
         while not game.check_is_win_state() and a:
             game.move_4tup(a)
-            r = game.get_reward()
+            r = get_reward(game)
             new_s = game.state_string
             new_a = actor.get_action(new_s,game.get_possible_moves())
             state_action_list.append([s,a])
@@ -87,6 +85,14 @@ def main():
     plt.plot(peg_in_episode_list)
     plt.ylabel('Num pegs')
     plt.show()
+
+def get_reward(game):
+    if game.check_is_win_state():
+        return 10
+    elif not game.get_possible_moves():
+        return -10
+    else:
+        return 0
 
 if __name__ == "__main__":
     main()

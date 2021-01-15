@@ -4,13 +4,12 @@ import networkx as nx
 
 class Triangle:
 
-    def __init__(self,size):
+    def __init__(self,size, nopeg_cell_list):
         self.cell_list = []
         self.size = size
         self.neighbor_move_values = ((0,-1),(-1,-1),(-1,0),(0,1),(1,1),(1,0))
         self.state_string = ""
 
-    def create_triangle(self,nopeg_cell_list):
         for row in range(self.size):
             rowList = []
             for col in range(row+1):
@@ -20,10 +19,10 @@ class Triangle:
         for cell_pos in nopeg_cell_list:
             self.cell_list[cell_pos[0]][cell_pos[1]].remove_pin()
             
-        self.init_neighbors_triangle()
+        self.init_neighbors()
         self.update_state_string()
 
-    def init_neighbors_triangle(self):
+    def init_neighbors(self):
         for row in self.cell_list:
             for cell in row:
                 for move in self.neighbor_move_values:
@@ -57,14 +56,6 @@ class Triangle:
 
     def check_is_win_state(self):
         return self.state_string.count('1') == 1
-
-    def get_reward(self):
-        if self.check_is_win_state():
-            return 10
-        elif not self.get_possible_moves():
-            return -10
-        else:
-            return 0
 
     def move_4tup(self,tup):
         self.move((tup[0],tup[1]),(tup[2],tup[3]))

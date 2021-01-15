@@ -12,7 +12,7 @@ class Critic:
         self.decay_rate = decay_rate
 
         for key in self.v.keys():
-            self.v[key] = random.random()
+            self.v[key] = rand.random()
 
     def reset_eligibilites(self):
         for key in self.e.keys():
