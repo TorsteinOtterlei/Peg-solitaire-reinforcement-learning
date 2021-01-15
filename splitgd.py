@@ -9,7 +9,14 @@ import numpy as np
 # and Tensorflow", 2nd edition, (Geron, 2019).
 
 # This class serves as a wrapper around a keras model.  Then, instead of calling keras_model.fit, just call
-# SplitGD.fit.  To use this class, just subclass it and write your own code for the "modify_gradients" method.
+# SplitGD.fit.
+#
+# WARNING.  In THEORY, you should be able to use this class by just subclassing it and writing your own code
+#  for the "modify_gradients" method.  However, there are many practical issues involving versions of tensorflow, use
+# of keras and the tensorflow backend, etc.  So the main purpose of this file is to show the basics of how you can
+# split gradient descent into two parts using tf.GradientTape.  Many similar examples exist online, but, again, there
+# is no guarantee that they will work seamlessly with your own code.
+
 
 class SplitGD():
 
@@ -23,45 +30,60 @@ class SplitGD():
     # value of a tensor.
     def gen_loss(self,features,targets,avg=False):
         predictions = self.model(features)  # Feed-forward pass to produce outputs/predictions
-        loss = self.model.loss_functions[0](targets,predictions)
+        loss = self.model.loss(targets, predictions) # model.loss = the loss function
         return tf.reduce_mean(loss).numpy() if avg else loss
 
-    def fit(self, features, targets, epochs=1, mbs=1,vfrac=0.1,verbose=True):
+    def fit(self, features, targets, epochs=1, mbs=1,vfrac=0.1,verbosity=1,callbacks=[]):
         params = self.model.trainable_weights
         train_ins, train_targs, val_ins, val_targs = split_training_data(features,targets,vfrac=vfrac)
-        for _ in range(epochs):
-            for _ in range(math.floor(epochs / mbs)):
+        for cb in callbacks:    cb.on_train_begin()
+        for epoch in range(epochs):
+            for cb in callbacks:    cb.on_epoch_begin(epoch)
+            for _ in range(math.floor(len(train_ins) / mbs)):
                 with tf.GradientTape() as tape:  # Read up on tf.GradientTape !!
                     feaset,tarset = gen_random_minibatch(train_ins,train_targs,mbs=mbs)
                     loss = self.gen_loss(feaset,tarset,avg=False)
                     gradients = tape.gradient(loss,params)
                     gradients = self.modify_gradients(gradients)
                     self.model.optimizer.apply_gradients(zip(gradients,params))
-            if verbose: self.end_of_epoch_display(train_ins,train_targs,val_ins,val_targs)
+            if verbosity > 0:
+                self.end_of_epoch_action(train_ins,train_targs,val_ins,val_targs,epoch,
+                                         verbosity=verbosity,callbacks=callbacks)
+        for cb in callbacks:    cb.on_train_end()
 
-    # Use the 'metric' to run a quick test on any set of features and targets.  A typical metric is some form of
-    # 'accuracy', such as 'categorical_accuracy'.  Read up on Keras.metrics !!
-    # Note that the model.metrics__names slot includes the name of the loss function (as 0th entry),
-    # whereas the model.metrics slot does not include the loss function, hence the index+1 in the final line.
-    # Use your debugger and go through the long list of slots for a keras model.  There are a lot of useful things
-    # that you have access to.
 
-    def gen_evaluation(self, features, targets, avg=False, index=0):
-        predictions = self.model(features)
-        evaluation = self.model.metrics[index](targets, predictions)
-        #  Note that this returns both a tensor (or value) and the NAME of the metric
-        return (tf.reduce_mean(evaluation).numpy() if avg else evaluation, self.model.metrics_names[index + 1])
+    # The call to model.evaluate does 2 things for a set of features and targets: 1) computes the loss, 2) applies
+    # the model's "metric" (which may differ from the loss) to produce an "evaluation".  A typical metric is
+    # "categorical_accuracy" = the fraction of outputs that are "correct", i.e. the highest output neuron
+    # corresponds to the correct value.  For more metrics, read up on Keras.metrics.
+    # Verbosity levels: 0 = no prints, 1 = only my own prints, 2 = my prints + TF prints (in call to model.evaluate
 
-    def status_display(self, features, targets, mode='Train'):
-        print(mode + ' *** ', end='')
-        print('Loss: ', self.gen_loss(features, targets, avg=True), end=' : ')
-        val, name = self.gen_evaluation(features, targets)
-        print('Eval({0}): {1} '.format(name, val))
+    def gen_evaluation(self,features,targets,avg=False,verbosity=0,callbacks=[]):
+        loss, evaluation = self.model.evaluate(features,targets,callbacks=callbacks,
+                                               batch_size=len(features), verbose=(1 if verbosity == 2 else 0))
+        return evaluation, loss
+        # return (tf.reduce_mean(evaluation).numpy() if avg else evaluation), loss
 
-    def end_of_epoch_display(self, train_ins, train_targs, val_ins, val_targs):
-        self.status_display(train_ins, train_targs, mode='Train')
-        if len(val_ins) > 0:
-            self.status_display(val_ins, val_targs, mode='      Validation')
+    def status_display(self, val, loss, verbosity = 1, mode='Train'):
+        if verbosity > 0:
+            print('{0} *** Loss: {1} Eval: {2}'.format(mode,loss,val), end=' ')
+
+    def end_of_epoch_action(self, train_ins, train_targs, valid_ins, valid_targs, epoch,verbosity=1,callbacks=[]):
+        print('\n Epoch: {0}'.format(epoch), end=' ')
+        # Calculate Loss and Evaluation for entire training set
+        val, loss = self.gen_evaluation(train_ins, train_targs,avg=True,verbosity=verbosity,callbacks=callbacks)
+        self.status_display(val,loss, verbosity=verbosity, mode='Train')
+        val2, loss2 = 0, 0
+        if len(valid_ins) > 0: # Calculate Loss and Evaluation for entire Validation Set
+            val2, loss2 = self.gen_evaluation(valid_ins, valid_targs, avg=True, verbosity=verbosity,callbacks=callbacks)
+            self.status_display(val2,loss2, verbosity=verbosity, mode='Validation')
+        self.update_callbacks(epoch, (loss, val, loss2, val2), callbacks)
+
+    def update_callbacks(self, epoch, quad, callbacks=[]):
+        cb_log = {"loss": quad[0], "metric": quad[1], "val_loss": quad[2], "val_metric": quad[3]}
+        #cb_log = {"loss": quad[0], "val_loss": quad[2]}
+        for cb in callbacks:    cb.on_epoch_end(epoch,cb_log)
+
 
 # A few useful auxiliary functions
 
