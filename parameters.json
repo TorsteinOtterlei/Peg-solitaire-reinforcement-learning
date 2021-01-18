@@ -1,8 +1,8 @@
 {
-    "board_type": "diamond",
-    "board_size": 4,
+    "board_type": "triangle",
+    "board_size": 6,
     "open_cells": ["(2,0)"],
-    "num_episodes": 600,
+    "num_episodes": 1200,
     "critic_type": "table",
     "nn_dimensions": "",
     "learning_rate_actor": 0.3,
@@ -12,7 +12,7 @@
     "discount_factor_actor": 0.9,
     "discount_factor_critic": 0.9,
     "init_val_e": 0.85,
-    "e_decay_rate": 0.007,
+    "e_decay_rate": 0.008,
     "display_var": 1,
     "frame_delay": 0.5
 }

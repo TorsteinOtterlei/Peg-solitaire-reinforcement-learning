@@ -29,15 +29,17 @@ class Actor:
         if not possible_actions:
             return None
 
-        current_best_action = possible_actions[0]
-        randnum = rand.random()
-        if randnum > self.e_greedy:                                          #If e_greedy is larger means larger probability of random
-            for action in possible_actions:
-                if self.get_policy(state,action) > self.get_policy(state,current_best_action):
-                    current_best_action = action
-        else:
-            index = rand.randint(0,len(possible_actions)-1)
-            current_best_action = possible_actions[index]
+        current_best_action = possible_actions[0]                           
+        for action in possible_actions:                                                         #Find best action
+            if self.get_policy(state,action) > self.get_policy(state,current_best_action):
+                current_best_action = action
+
+        randnum = rand.random()                                               #Exploration. An action among the non-best actions is chosen at random
+        if randnum < self.e_greedy and len(possible_actions)>1:               #If e_greedy is larger means larger probability of random
+            possible_actions_without_best = possible_actions.copy()
+            possible_actions_without_best.remove(current_best_action)
+            index = rand.randint(0,len(possible_actions_without_best)-1)
+            current_best_action = possible_actions_without_best[index]
             self.e_greedy = self.e_greedy * (1 - self.e_decay_rate)
         
         return current_best_action

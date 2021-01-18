@@ -20,11 +20,7 @@ def main():
     game_type = ""
     open_cell_list = open_cell_list_gen(parameters['open_cells'])
 
-    if parameters['board_type'] == "diamond":
-        game_type = 'd'
-    elif parameters['board_type'] == "triangle":
-        game_type = 't'
-
+    game_type = parameters['board_type'].lower()
     learning_rate_actor = parameters['learning_rate_actor']
     learning_rate_critic = parameters['learning_rate_critic']
     discount_factor_actor = parameters['discount_factor_actor']
@@ -41,9 +37,9 @@ def main():
     peg_in_episode_list = []
 
     for i in range(num_episodes):
-        if game_type == 'd':
+        if game_type == 'diamond':
             game = Diamond(parameters['board_size'], open_cell_list)
-        elif game_type == 't':
+        elif game_type == 'triangle':
             game = Triangle(parameters['board_size'], open_cell_list)
         else: raise Exception("Not valid game type")
 
@@ -53,7 +49,6 @@ def main():
 
         s = game.state_string
         a = actor.get_action(s,game.get_possible_moves())
-
 
         while not game.check_is_win_state() and a:
             game.move_4tup(a)
