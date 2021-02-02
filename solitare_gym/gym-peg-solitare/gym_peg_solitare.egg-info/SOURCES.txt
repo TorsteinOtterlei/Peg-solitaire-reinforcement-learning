@@ -1,0 +1,7 @@
+README.md
+setup.py
+gym_peg_solitare.egg-info/PKG-INFO
+gym_peg_solitare.egg-info/SOURCES.txt
+gym_peg_solitare.egg-info/dependency_links.txt
+gym_peg_solitare.egg-info/requires.txt
+gym_peg_solitare.egg-info/top_level.txt

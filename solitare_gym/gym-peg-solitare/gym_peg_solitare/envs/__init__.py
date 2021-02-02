@@ -1,0 +1,2 @@
+from gym_peg_solitare.envs.diamond_env import DiamondEnv
+from gym_peg_solitare.envs.triangle_env import TriangleEnv
